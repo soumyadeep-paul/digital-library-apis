@@ -1,0 +1,188 @@
+// This file contains sample content for the mongodb database
+{
+    "books": [
+        {
+            "title": "The Great Gatsby",
+            "author": "F. Scott Fitzgerald",
+            "description": "A novel set in the 1920s about the American dream.",
+            "available": true,
+            "thumbnail_url": "https://example.com/gatsby.jpg"
+        },
+        {
+            "title": "To Kill a Mockingbird",
+            "author": "Harper Lee",
+            "description": "A novel about racial injustice in the Deep South.",
+            "available": true,
+            "thumbnail_url": "https://example.com/mockingbird.jpg"
+        }
+    ],
+    "users": [
+        {
+            "name": "John Doe",
+            "email": "john@example.com",
+            "password": "hashed_password",
+            "role": "user"
+        },
+        {
+            "name": "Jane Smith",
+            "email": "jane@example.com",
+            "password": "hashed_password",
+            "role": "admin"
+        }
+    ],
+    "orders": [
+        {
+            "user_id": "user_id_1",
+            "book_id": "book_id_1",
+            "quantity": 1,
+            "status": "shipped",
+            "order_date": "2023-01-01"
+        }
+    ],
+    "reviews": [
+        {
+            "book_id": "book_id_1",
+            "user_id": "user_id_1",
+            "rating": 5,
+            "comment": "An amazing read!",
+            "review_date": "2023-01-02"
+        }
+    ],
+    "cart": [
+        {
+            "user_id": "user_id_1",
+            "items": [
+                {
+                    "book_id": "book_id_1",
+                    "quantity": 1
+                }
+            ]
+        }
+    ],
+    "wishlist": [
+        {
+            "user_id": "user_id_1",
+            "items": [
+                {
+                    "book_id": "book_id_2"
+                }
+            ]
+        }
+    ],
+    "notifications": [
+        {
+            "user_id": "user_id_1",
+            "message": "Your order has been shipped!",
+            "read": false,
+            "timestamp": "2023-01-03"
+        }
+    ]
+}
+
+// Execute the following command to insert the sample data into your MongoDB database:
+// db.books.insertMany([
+    {
+        "title": "The Great Gatsby",
+        "author": "F. Scott Fitzgerald",
+        "description": "A novel set in the 1920s about the American dream.",
+        "available": true,
+        "thumbnail_url": "https://example.com/gatsby.jpg"
+    },
+    {
+        "title": "To Kill a Mockingbird",
+        "author": "Harper Lee",
+        "description": "A novel about racial injustice in the Deep South.",
+        "available": true,
+        "thumbnail_url": "https://example.com/mockingbird.jpg"
+    }
+]);
+// db.users.insertMany([
+    {
+        "name": "John Doe",
+        "email": "john@example.com",
+        "password": "hashed_password",
+        "role": "user"
+    },
+    {
+        "name": "Jane Smith",
+        "email": "jane@example.com",
+        "password": "hashed_password",
+        "role": "admin"
+    }
+]);
+// db.orders.insertMany([
+    {
+        "user_id": "user_id_1",
+        "book_id": "book_id_1",
+        "quantity": 1,
+        "status": "shipped",
+        "order_date": "2023-01-01"
+    }
+]);
+// db.reviews.insertMany([
+    {
+        "book_id": "book_id_1",
+        "user_id": "user_id_1",
+        "rating": 5,
+        "comment": "An amazing read!",
+        "review_date": "2023-01-02"
+    }
+]);
+// db.cart.insertMany([
+    {
+        "user_id": "user_id_1",
+        "items": [
+            {
+                "book_id": "book_id_1",
+                "quantity": 1
+            }
+        ]
+    }
+]);
+// db.wishlist.insertMany([
+    {
+        "user_id": "user_id_1",
+        "items": [
+            {
+                "book_id": "book_id_2"
+            }       
+        ]
+    }
+]); 
+// db.notifications.insertMany([
+    {
+        "user_id": "user_id_1",
+        "message": "Your order has been shipped!",
+        "read": false,
+        "timestamp": "2023-01-03"
+    }
+]);
+// db.notifications.insertMany([
+    {
+        "user_id": "user_id_1",
+        "message": "Your order has been shipped!",
+        "read": false,
+        "timestamp": "2023-01-03"
+    }
+]);
+// db.cart.insertMany([
+    {
+        "user_id": "user_id_1",
+        "items": [
+            {
+                "book_id": "book_id_1",
+                "quantity": 1
+            }
+        ]
+    }
+]);
+// db.wishlist.insertMany([
+    {
+        "user_id": "user_id_1",
+        "items": [
+            {
+                "book_id": "book_id_2"
+            }
+        ]
+    }
+]); 

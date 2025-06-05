@@ -1,0 +1,81 @@
+//# This file is a sample mongodb schema for the catalog api
+{
+    "books": {
+        "title": "string",
+        "author": "string",
+        "description": "string",
+        "available": "boolean",
+        "thumbnail_url": "string"
+    }
+}   
+// This file is a sample mongodb schema for the users api
+{
+    "users": {
+        "name": "string",
+        "email": "string",
+        "password": "string",
+        "role": "string"
+    }
+}
+// This file is a sample mongodb schema for the orders api
+{
+    "orders": {
+        "user_id": "string",
+        "book_id": "string",
+        "quantity": "number",
+        "status": "string",
+        "order_date": "date"
+    }
+}
+// This file is a sample mongodb schema for the reviews api
+{
+    "reviews": {
+        "book_id": "string",
+        "user_id": "string",
+        "rating": "number",         
+        "comment": "string",
+        "review_date": "date"
+    }   
+}
+// This file is a sample mongodb schema for the cart api
+{
+    "cart": {
+        "user_id": "string",
+        "items": [
+            {
+                "book_id": "string",
+                "quantity": "number"
+            }
+        ]
+    }       
+}
+// This file is a sample mongodb schema for the wishlist api
+{
+    "wishlist": {       
+        "user_id": "string",
+        "items": [
+            {
+                "book_id": "string"
+            }
+        ]
+    }
+}
+// This file is a sample mongodb schema for the notifications api
+{
+    "notifications": {
+        "user_id": "string",
+        "message": "string",
+        "read": "boolean",
+        "timestamp": "date"
+    }
+}
+
+// This is a free library management system API schema
+// It includes APIs for managing books, users, orders, reviews, cart, wishlist, and notifications       
+// Each API has its own schema with relevant fields
+// The schemas are designed to be used with MongoDB
+// The schemas include fields for basic operations like create, read, update, and delete
+// The schemas are designed to be flexible and extensible
+// The schemas can be used to build a complete library management system
+// The schemas can be used to build a RESTful API   
+
