@@ -2,6 +2,9 @@ import pytest
 from httpx import AsyncClient, ASGITransport
 import asyncio
 from urllib.parse import urlparse, urlunparse
+from bson import ObjectId
+from datetime import datetime, timedelta
+import requests
 
 from digital_library.main import app
 from digital_library.database import get_db
@@ -38,45 +41,71 @@ async def client():
 
 
 @pytest.mark.asyncio
-async def test_read_root(client: AsyncClient):
-    response = await client.get("/")
+async def test_list_users(client: AsyncClient):
+    # Create community and users
+    community_response = await client.post("/communities/", json={"name": "Test Community"})
+    community_id = community_response.json()["id"]
+    await client.post("/users/", json={"first_name": "test1", "last_name": "user1", "email": "test1@example.com", "community_id": community_id, "block_number": "A", "flat_number": "101"})
+    await client.post("/users/", json={"first_name": "test2", "last_name": "user2", "email": "test2@example.com", "community_id": community_id, "block_number": "B", "flat_number": "102"})
+
+    # List users
+    response = await client.get("/users/")
     assert response.status_code == 200
-    assert response.json() == {"message": "Welcome to the Digital Library"}
+    assert len(response.json()) == 2
 
 
 @pytest.mark.asyncio
-async def test_create_user(client: AsyncClient):
-    response = await client.post("/users/", json={"username": "testuser", "email": "test@example.com"})
-    assert response.status_code == 201
-    data = response.json()
-    assert data["username"] == "testuser"
-    assert "id" in data
+async def test_filter_books(client: AsyncClient, monkeypatch):
+    # Mock external calls
+    monkeypatch.setattr("digital_library.routers.books.get_book_details_from_google_books", lambda isbn: {"description": "", "genre": "Fiction", "thumbnail": ""})
+    monkeypatch.setattr("isbnlib.meta", lambda isbn: {"Title": "Test Book", "Authors": ["Test Author"]})
 
-
-@pytest.mark.asyncio
-async def test_create_user_existing_email(client: AsyncClient):
-    await client.post("/users/", json={"username": "testuser1", "email": "test1@example.com"})
-    response = await client.post("/users/", json={"username": "testuser2", "email": "test1@example.com"})
-    assert response.status_code == 400
-
-
-@pytest.mark.asyncio
-async def test_create_book(client: AsyncClient):
-    user_response = await client.post("/users/", json={"username": "bookowner", "email": "owner@example.com"})
+    # Create user, community, and book
+    community_response = await client.post("/communities/", json={"name": "Test Community"})
+    community_id = community_response.json()["id"]
+    user_response = await client.post("/users/", json={"first_name": "test", "last_name": "user", "email": "test@example.com", "community_id": community_id, "block_number": "A", "flat_number": "101"})
     user_id = user_response.json()["id"]
+    await client.post("/books/", json={"isbn": "9780321765723", "owner_id": user_id, "community_id": community_id})
 
-    # A valid ISBN for testing
-    isbn = "9780321765723"
+    # Filter by title
+    response = await client.get("/books/?title=Test")
+    assert response.status_code == 200
+    assert len(response.json()) == 1
 
-    response = await client.post("/books/", json={"isbn": isbn, "owner_id": user_id})
-    assert response.status_code == 201
-    data = response.json()
-    assert data["isbn"] == isbn
-    assert data["owner_id"] == user_id
+    # Filter by genre
+    response = await client.get("/books/?genre=Fiction")
+    assert response.status_code == 200
+    assert len(response.json()) == 1
 
 
 @pytest.mark.asyncio
-async def test_list_books(client: AsyncClient):
-    response = await client.get("/books/")
-    assert response.status_code == 200
-    assert isinstance(response.json(), list)
+async def test_confirm_return_with_rating(client: AsyncClient, monkeypatch):
+    # Mock external calls and notifications
+    monkeypatch.setattr("digital_library.routers.books.get_book_details_from_google_books", lambda isbn: {"description": "", "genre": "", "thumbnail": ""})
+    monkeypatch.setattr("isbnlib.meta", lambda isbn: {"Title": "Test Book", "Authors": ["Test Author"]})
+    monkeypatch.setattr("digital_library.routers.books.send_notification", lambda db, user, message, type, cc_user: None)
+
+    # Create user, community, and book
+    community_response = await client.post("/communities/", json={"name": "Test Community"})
+    community_id = community_response.json()["id"]
+    owner_response = await client.post("/users/", json={"first_name": "owner", "last_name": "user", "email": "owner@example.com", "community_id": community_id, "block_number": "A", "flat_number": "101"})
+    owner_id = owner_response.json()["id"]
+    borrower_response = await client.post("/users/", json={"first_name": "borrower", "last_name": "user", "email": "borrower@example.com", "community_id": community_id, "block_number": "B", "flat_number": "102"})
+    borrower_id = borrower_response.json()["id"]
+    book_response = await client.post("/books/", json={"isbn": "9780321765723", "owner_id": owner_id, "community_id": community_id})
+    book_id = book_response.json()["id"]
+
+    # Full reservation flow
+    await client.post(f"/books/{book_id}/reserve", json={"borrower_id": borrower_id, "return_date": (datetime.utcnow() + timedelta(days=14)).isoformat()})
+    await client.post(f"/books/{book_id}/confirm-reservation", json={"owner_id": owner_id})
+    await client.post(f"/books/{book_id}/return", json={"borrower_id": borrower_id})
+
+    # Confirm return with rating
+    await client.post(f"/books/{book_id}/confirm-return", json={"owner_id": owner_id, "rating": 5, "comment": "Great!"})
+
+    # Verify rating
+    user_response = await client.get(f"/users/")
+    borrower_data = next(user for user in user_response.json() if user["id"] == borrower_id)
+    assert len(borrower_data["ratings"]) == 1
+    assert borrower_data["ratings"][0]["rating"] == 5
+    assert borrower_data["ratings"][0]["comment"] == "Great!"

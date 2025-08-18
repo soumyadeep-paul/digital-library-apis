@@ -84,6 +84,7 @@ class Book(BaseModel):
     authors: List[str]
     isbn: str
     owner_id: PyObjectId
+    community_id: PyObjectId
     status: str = "available"
     borrower_id: Optional[PyObjectId] = None
     reservation_pending: bool = False
@@ -92,6 +93,7 @@ class Book(BaseModel):
     description: Optional[str] = None
     genre: Optional[str] = None
     thumbnail: Optional[str] = None
+    return_date: Optional[datetime] = None
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -102,13 +104,16 @@ class Book(BaseModel):
 class BookCreate(BaseModel):
     isbn: str
     owner_id: PyObjectId
+    community_id: PyObjectId
 
 class Reservation(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    book_id: PyObjectId
+    item_id: PyObjectId
+    item_type: str
     borrower_id: PyObjectId
     owner_id: PyObjectId
     reserved_at: datetime = Field(default_factory=datetime.utcnow)
+    return_date: Optional[datetime] = None
     confirmed_at: Optional[datetime] = None
     returned_at: Optional[datetime] = None
 
@@ -120,6 +125,7 @@ class Reservation(BaseModel):
 
 class ReserveRequest(BaseModel):
     borrower_id: PyObjectId
+    return_date: datetime
 
 class OwnerConfirmRequest(BaseModel):
     owner_id: PyObjectId
@@ -131,3 +137,20 @@ class ReturnConfirmRequest(BaseModel):
     owner_id: PyObjectId
     rating: int
     comment: Optional[str] = None
+
+class ReminderRequest(BaseModel):
+    owner_id: PyObjectId
+
+class Notification(BaseModel):
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    user_id: PyObjectId
+    message: str
+    type: str
+    status: str = "pending"
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        json_encoders={ObjectId: str},
+    )
