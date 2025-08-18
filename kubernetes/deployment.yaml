@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: digital-library-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: digital-library-api
+  template:
+    metadata:
+      labels:
+        app: digital-library-api
+    spec:
+      containers:
+      - name: digital-library-api
+        image: your-docker-repo/digital-library-api:latest # IMPORTANT: Replace with your actual image path
+        ports:
+        - containerPort: 8000
+        env:
+        - name: MONGO_DETAILS
+          value: "mongodb://your-mongo-service:27017/digital_library" # IMPORTANT: Replace with your mongo service details
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: digital-library-api-service
+spec:
+  selector:
+    app: digital-library-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
+  type: LoadBalancer # Use NodePort or ClusterIP if you don't want an external load balancer

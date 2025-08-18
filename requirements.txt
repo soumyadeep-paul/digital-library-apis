@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+pymongo
+pydantic[email]
+python-dotenv
+isbnlib
+pytest
+pytest-asyncio
+httpx
+motor

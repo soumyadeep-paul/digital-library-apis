@@ -1,0 +1,27 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+.env
+
+# Tests
+tests/
+
+# Documentation
+docs/
+README.md
+
+# Other
+pytest.ini
+Dockerfile
+docker-compose.yml
+kubernetes/
+openapi.json
+scripts/
+.dockerignore
