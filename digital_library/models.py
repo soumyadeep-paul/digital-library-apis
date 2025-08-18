@@ -33,10 +33,35 @@ class PyObjectId(ObjectId):
             raise ValueError("Invalid ObjectId")
         return ObjectId(v)
 
+class Community(BaseModel):
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    name: str
+    description: Optional[str] = None
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        json_encoders={ObjectId: str},
+    )
+
+class CommunityCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+
+class Rating(BaseModel):
+    rating: int = Field(..., ge=1, le=5)
+    comment: Optional[str] = None
+    rated_by: PyObjectId
+
 class User(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
-    username: str
+    first_name: str
+    last_name: str
     email: EmailStr
+    community_id: PyObjectId
+    block_number: str
+    flat_number: str
+    ratings: List[Rating] = []
     member_since: datetime = Field(default_factory=datetime.utcnow)
 
     model_config = ConfigDict(
@@ -46,8 +71,12 @@ class User(BaseModel):
     )
 
 class UserCreate(BaseModel):
-    username: str
+    first_name: str
+    last_name: str
     email: EmailStr
+    community_id: PyObjectId
+    block_number: str
+    flat_number: str
 
 class Book(BaseModel):
     id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
@@ -60,6 +89,9 @@ class Book(BaseModel):
     reservation_pending: bool = False
     return_pending: bool = False
     last_updated: datetime = Field(default_factory=datetime.utcnow)
+    description: Optional[str] = None
+    genre: Optional[str] = None
+    thumbnail: Optional[str] = None
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -71,6 +103,21 @@ class BookCreate(BaseModel):
     isbn: str
     owner_id: PyObjectId
 
+class Reservation(BaseModel):
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    book_id: PyObjectId
+    borrower_id: PyObjectId
+    owner_id: PyObjectId
+    reserved_at: datetime = Field(default_factory=datetime.utcnow)
+    confirmed_at: Optional[datetime] = None
+    returned_at: Optional[datetime] = None
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed=True,
+        json_encoders={ObjectId: str},
+    )
+
 class ReserveRequest(BaseModel):
     borrower_id: PyObjectId
 
@@ -79,3 +126,8 @@ class OwnerConfirmRequest(BaseModel):
 
 class BorrowerReturnRequest(BaseModel):
     borrower_id: PyObjectId
+
+class ReturnConfirmRequest(BaseModel):
+    owner_id: PyObjectId
+    rating: int
+    comment: Optional[str] = None
